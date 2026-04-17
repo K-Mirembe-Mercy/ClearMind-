@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ClearMind — AI Wellness & Productivity Assistant</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a0a0f;
+  --bg2:#111118;
+  --surface:#16161f;
+  --surface2:#1e1e2a;
+  --border:rgba(255,255,255,0.07);
+  --border2:rgba(255,255,255,0.12);
+  --text:#f0eee8;
+  --muted:#7a7a8c;
+  --accent:#7c6ef5;
+  --accent2:#e87c5a;
+  --accent3:#5ae8b4;
+  --glow:rgba(124,110,245,0.15);
+}
+html{scroll-behavior:smooth}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);overflow-x:hidden;cursor:none}
+
+/* CUSTOM CURSOR */
+.cursor{position:fixed;width:12px;height:12px;background:var(--accent);border-radius:50%;pointer-events:none;z-index:9999;transition:transform 0.15s ease;mix-blend-mode:screen}
+.cursor-trail{position:fixed;width:32px;height:32px;border:1px solid rgba(124,110,245,0.4);border-radius:50%;pointer-events:none;z-index:9998;transition:all 0.12s ease;transform:translate(-50%,-50%)}
+
+/* NOISE TEXTURE */
+body::after{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");pointer-events:none;z-index:9997;opacity:0.5}
+
+/* NAV */
+nav{position:fixed;top:0;left:0;right:0;z-index:1000;padding:1.2rem 3rem;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid transparent;transition:all 0.4s}
+nav.scrolled{background:rgba(10,10,15,0.85);backdrop-filter:blur(20px);border-color:var(--border)}
+.nav-logo{font-family:'Syne',sans-serif;font-weight:800;font-size:1.3rem;letter-spacing:-0.02em;color:var(--text)}
+.nav-logo span{color:var(--accent)}
+.nav-links{display:flex;gap:2rem;list-style:none}
+.nav-links a{font-size:0.85rem;color:var(--muted);text-decoration:none;letter-spacing:0.04em;text-transform:uppercase;font-weight:500;transition:color 0.2s}
+.nav-links a:hover{color:var(--text)}
+.nav-cta{padding:0.55rem 1.3rem;background:var(--accent);color:white;border-radius:100px;font-size:0.82rem;font-weight:600;text-decoration:none;font-family:'DM Sans',sans-serif;transition:all 0.2s;letter-spacing:0.01em}
+.nav-cta:hover{background:#9183f7;transform:translateY(-1px)}
+
+/* HERO */
+.hero{min-height:100vh;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;padding:8rem 2rem 4rem}
+.hero-bg{position:absolute;inset:0;overflow:hidden}
+.orb{position:absolute;border-radius:50%;filter:blur(80px);animation:drift 8s ease-in-out infinite alternate}
+.orb1{width:600px;height:600px;background:rgba(124,110,245,0.12);top:-10%;left:-10%;animation-delay:0s}
+.orb2{width:500px;height:500px;background:rgba(232,124,90,0.08);bottom:-10%;right:-5%;animation-delay:-3s}
+.orb3{width:400px;height:400px;background:rgba(90,232,180,0.06);top:40%;left:40%;animation-delay:-5s}
+@keyframes drift{0%{transform:translate(0,0) scale(1)}100%{transform:translate(30px,20px) scale(1.05)}}
+
+/* Grid lines */
+.hero-grid{position:absolute;inset:0;background-image:linear-gradient(var(--border) 1px,transparent 1px),linear-gradient(90deg,var(--border) 1px,transparent 1px);background-size:60px 60px;mask-image:radial-gradient(ellipse at center,black 0%,transparent 70%)}
+
+.hero-inner{text-align:center;position:relative;max-width:900px}
+.hero-badge{display:inline-flex;align-items:center;gap:0.5rem;padding:0.4rem 1rem;border:1px solid rgba(124,110,245,0.3);border-radius:100px;font-size:0.75rem;color:var(--accent);letter-spacing:0.08em;text-transform:uppercase;font-weight:600;margin-bottom:2rem;background:rgba(124,110,245,0.07);animation:fadeUp 0.6s ease both}
+.hero-badge::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--accent3);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+
+.hero h1{font-family:'Syne',sans-serif;font-size:clamp(3rem,7vw,6.5rem);font-weight:800;line-height:1.0;letter-spacing:-0.04em;margin-bottom:1.5rem;animation:fadeUp 0.6s 0.1s ease both}
+.hero h1 .line2{display:block;background:linear-gradient(135deg,var(--accent) 0%,#b8adff 50%,var(--accent2) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hero h1 .line3{display:block;font-family:'Instrument Serif',serif;font-weight:400;font-style:italic;font-size:0.75em;color:var(--muted);-webkit-text-fill-color:var(--muted)}
+
+.hero-sub{font-size:1.1rem;color:var(--muted);max-width:560px;margin:0 auto 2.5rem;line-height:1.7;font-weight:300;animation:fadeUp 0.6s 0.2s ease both}
+
+.hero-btns{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;animation:fadeUp 0.6s 0.3s ease both}
+.btn-primary{padding:0.85rem 2rem;background:var(--accent);color:white;border:none;border-radius:12px;font-family:'DM Sans',sans-serif;font-size:0.95rem;font-weight:600;cursor:pointer;transition:all 0.25s;position:relative;overflow:hidden}
+.btn-primary::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,0.15),transparent);opacity:0;transition:opacity 0.2s}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 12px 40px rgba(124,110,245,0.4)}
+.btn-primary:hover::after{opacity:1}
+.btn-outline{padding:0.85rem 2rem;background:transparent;color:var(--text);border:1px solid var(--border2);border-radius:12px;font-family:'DM Sans',sans-serif;font-size:0.95rem;font-weight:500;cursor:pointer;transition:all 0.25s}
+.btn-outline:hover{border-color:var(--accent);color:var(--accent);background:rgba(124,110,245,0.07)}
+
+.hero-metrics{display:flex;gap:3rem;justify-content:center;margin-top:4rem;animation:fadeUp 0.6s 0.4s ease both}
+.metric{text-align:center}
+.metric-num{font-family:'Syne',sans-serif;font-size:2rem;font-weight:800;color:var(--text)}
+.metric-num span{color:var(--accent)}
+.metric-label{font-size:0.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-top:2px}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+
+/* PROBLEM SECTION */
+.section{padding:6rem 2rem;max-width:1200px;margin:0 auto}
+.section-label{font-size:0.72rem;color:var(--accent);letter-spacing:0.12em;text-transform:uppercase;font-weight:700;margin-bottom:1rem;display:flex;align-items:center;gap:0.5rem}
+.section-label::before{content:'';height:1px;width:30px;background:var(--accent)}
+.section h2{font-family:'Syne',sans-serif;font-size:clamp(2rem,4vw,3rem);font-weight:800;letter-spacing:-0.03em;margin-bottom:1rem;line-height:1.1}
+.section h2 em{font-family:'Instrument Serif',serif;font-weight:400;font-style:italic;color:var(--accent)}
+
+.problem-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;margin-top:3rem}
+.problem-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:1.75rem;position:relative;overflow:hidden;transition:all 0.3s}
+.problem-card::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(124,110,245,0.05),transparent);opacity:0;transition:opacity 0.3s}
+.problem-card:hover{border-color:var(--border2);transform:translateY(-4px)}
+.problem-card:hover::before{opacity:1}
+.problem-icon{font-size:1.8rem;margin-bottom:1rem;display:block}
+.problem-card h4{font-family:'Syne',sans-serif;font-size:1rem;font-weight:700;margin-bottom:0.5rem}
+.problem-card p{font-size:0.85rem;color:var(--muted);line-height:1.65}
+.problem-stat{font-family:'Syne',sans-serif;font-size:1.8rem;font-weight:800;color:var(--accent2);margin-top:1rem}
+.problem-stat span{font-size:0.75rem;color:var(--muted);font-family:'DM Sans',sans-serif;font-weight:400;display:block;margin-top:2px}
+
+/* SOLUTION / DEMO SECTION */
+.demo-section{background:var(--bg2);border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:6rem 2rem}
+.demo-inner{max-width:1200px;margin:0 auto}
+.demo-layout{display:grid;grid-template-columns:1fr 1.3fr;gap:4rem;align-items:start;margin-top:3rem}
+
+/* AI CHAT UI */
+.chat-window{background:var(--surface);border:1px solid var(--border);border-radius:20px;overflow:hidden;box-shadow:0 24px 80px rgba(0,0,0,0.4),0 0 0 1px rgba(124,110,245,0.1)}
+.chat-titlebar{background:var(--surface2);padding:1rem 1.25rem;display:flex;align-items:center;gap:0.75rem;border-bottom:1px solid var(--border)}
+.dots{display:flex;gap:5px}
+.dot{width:10px;height:10px;border-radius:50%}
+.dot.r{background:#ff5f57}.dot.y{background:#febc2e}.dot.g{background:#28c840}
+.chat-title{font-size:0.8rem;font-weight:600;color:var(--muted);margin-left:0.5rem;font-family:'Syne',sans-serif}
+.ai-status{margin-left:auto;display:flex;align-items:center;gap:5px;font-size:0.72rem;color:var(--accent3)}
+.ai-status::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--accent3);animation:pulse 2s infinite}
+
+.chat-messages{padding:1.25rem;display:flex;flex-direction:column;gap:0.85rem;max-height:380px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--border) transparent}
+.bubble{max-width:80%;padding:0.75rem 1rem;border-radius:14px;font-size:0.83rem;line-height:1.6}
+.bubble.ai{background:var(--surface2);border:1px solid var(--border);border-bottom-left-radius:4px;align-self:flex-start}
+.bubble.user{background:var(--accent);color:white;border-bottom-right-radius:4px;align-self:flex-end}
+.bubble .sender{font-size:0.65rem;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px;opacity:0.6;font-weight:600}
+.bubble.user .sender{text-align:right}
+
+.chat-inputbar{padding:0.85rem 1rem;border-top:1px solid var(--border);background:var(--surface2);display:flex;gap:0.6rem;align-items:center}
+#chatInput{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:0.6rem 0.9rem;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.83rem;outline:none;transition:border-color 0.2s}
+#chatInput:focus{border-color:rgba(124,110,245,0.5)}
+#chatInput::placeholder{color:var(--muted)}
+#sendBtn{padding:0.6rem 1.1rem;background:var(--accent);color:white;border:none;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:0.82rem;font-weight:600;cursor:pointer;transition:all 0.2s;white-space:nowrap}
+#sendBtn:hover{background:#9183f7}
+#sendBtn:disabled{opacity:0.5;cursor:not-allowed}
+
+.quick-chips{padding:0.5rem 1rem 0;display:flex;gap:0.4rem;flex-wrap:wrap}
+.chip{font-size:0.72rem;padding:0.28rem 0.7rem;border:1px solid var(--border);border-radius:100px;color:var(--muted);cursor:pointer;background:transparent;font-family:'DM Sans',sans-serif;transition:all 0.15s}
+.chip:hover{border-color:var(--accent);color:var(--accent);background:rgba(124,110,245,0.07)}
+
+/* FEATURE CARDS */
+.features-stack{display:flex;flex-direction:column;gap:1rem}
+.feat-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.3rem 1.5rem;display:flex;gap:1rem;align-items:flex-start;transition:all 0.25s;cursor:default}
+.feat-card:hover{border-color:var(--border2);background:var(--surface2)}
+.feat-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0}
+.feat-icon.purple{background:rgba(124,110,245,0.15)}
+.feat-icon.orange{background:rgba(232,124,90,0.15)}
+.feat-icon.green{background:rgba(90,232,180,0.15)}
+.feat-icon.pink{background:rgba(232,90,180,0.15)}
+.feat-body h4{font-family:'Syne',sans-serif;font-size:0.92rem;font-weight:700;margin-bottom:4px}
+.feat-body p{font-size:0.8rem;color:var(--muted);line-height:1.55}
+
+/* HOW IT WORKS */
+.steps-section{padding:6rem 2rem;max-width:1200px;margin:0 auto}
+.steps-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1.5rem;margin-top:3rem;position:relative}
+.steps-grid::before{content:'';position:absolute;top:28px;left:calc(12.5% + 1px);right:calc(12.5% + 1px);height:1px;background:linear-gradient(90deg,transparent,var(--border),var(--border),var(--border),transparent);z-index:0}
+.step{text-align:center;position:relative}
+.step-num{width:56px;height:56px;border-radius:50%;background:var(--surface);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;font-family:'Syne',sans-serif;font-weight:800;font-size:0.9rem;color:var(--accent);position:relative;z-index:1;transition:all 0.3s}
+.step:hover .step-num{background:var(--accent);color:white;border-color:var(--accent);box-shadow:0 0 30px rgba(124,110,245,0.4)}
+.step h4{font-family:'Syne',sans-serif;font-size:0.9rem;font-weight:700;margin-bottom:0.4rem}
+.step p{font-size:0.78rem;color:var(--muted);line-height:1.6}
+
+/* TECH STACK */
+.tech-section{background:var(--surface);border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:4rem 2rem}
+.tech-inner{max-width:1200px;margin:0 auto}
+.tech-grid{display:flex;gap:1rem;flex-wrap:wrap;margin-top:2.5rem;justify-content:center}
+.tech-badge{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:0.6rem 1.1rem;font-size:0.8rem;font-weight:600;font-family:'Syne',sans-serif;display:flex;align-items:center;gap:0.5rem;transition:all 0.2s;cursor:default}
+.tech-badge:hover{border-color:var(--accent);color:var(--accent);background:rgba(124,110,245,0.07)}
+.tech-badge .tech-dot{width:7px;height:7px;border-radius:50%}
+.td-ai{background:#7c6ef5}.td-nlp{background:#e87c5a}.td-fe{background:#5ae8b4}.td-data{background:#e85ab4}.td-cloud{background:#5ab4e8}
+
+/* IMPACT */
+.impact-section{padding:6rem 2rem;max-width:1200px;margin:0 auto}
+.impact-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:2rem;margin-top:3rem}
+.impact-card{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:2rem;position:relative;overflow:hidden}
+.impact-card::after{content:'';position:absolute;inset:0;border-radius:20px;background:linear-gradient(135deg,rgba(124,110,245,0.08),transparent 60%);pointer-events:none}
+.impact-num{font-family:'Syne',sans-serif;font-size:3rem;font-weight:800;background:linear-gradient(135deg,var(--accent),#b8adff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1}
+.impact-card h4{font-family:'Syne',sans-serif;font-size:1rem;font-weight:700;margin:0.4rem 0}
+.impact-card p{font-size:0.82rem;color:var(--muted);line-height:1.65}
+
+/* TEAM */
+.team-section{background:var(--bg2);border-top:1px solid var(--border);padding:5rem 2rem}
+.team-inner{max-width:900px;margin:0 auto;text-align:center}
+.team-grid{display:flex;gap:2rem;justify-content:center;flex-wrap:wrap;margin-top:3rem}
+.team-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:1.75rem 2rem;min-width:180px;text-align:center;transition:all 0.3s}
+.team-card:hover{border-color:var(--border2);transform:translateY(-4px)}
+.team-avatar{width:60px;height:60px;border-radius:50%;margin:0 auto 0.75rem;font-size:1.4rem;display:flex;align-items:center;justify-content:center;border:1px solid var(--border)}
+.team-card h4{font-family:'Syne',sans-serif;font-size:0.9rem;font-weight:700}
+.team-card p{font-size:0.75rem;color:var(--muted);margin-top:2px}
+
+/* CTA */
+.cta-section{padding:8rem 2rem;text-align:center;position:relative;overflow:hidden}
+.cta-section::before{content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:600px;height:600px;background:radial-gradient(circle,rgba(124,110,245,0.12) 0%,transparent 70%);pointer-events:none}
+.cta-section h2{font-family:'Syne',sans-serif;font-size:clamp(2rem,5vw,4rem);font-weight:800;letter-spacing:-0.03em;margin-bottom:1rem}
+.cta-section h2 em{font-family:'Instrument Serif',serif;font-weight:400;font-style:italic;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.cta-section p{color:var(--muted);margin-bottom:2.5rem;font-size:1.05rem}
+.cta-links{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap}
+.link-btn{display:flex;align-items:center;gap:0.5rem;padding:0.75rem 1.5rem;border:1px solid var(--border);border-radius:12px;color:var(--muted);text-decoration:none;font-size:0.85rem;font-weight:600;transition:all 0.2s;font-family:'Syne',sans-serif}
+.link-btn:hover{border-color:var(--accent);color:var(--accent);background:rgba(124,110,245,0.07)}
+.link-btn svg{width:16px;height:16px}
+
+/* FOOTER */
+footer{border-top:1px solid var(--border);padding:2rem;text-align:center;font-size:0.78rem;color:var(--muted)}
+footer strong{color:var(--accent)}
+
+/* TYPING */
+.typing-indicator{display:flex;gap:4px;align-items:center;padding:2px 0}
+.typing-indicator span{width:5px;height:5px;border-radius:50%;background:var(--muted);animation:typeBounce 1.2s infinite}
+.typing-indicator span:nth-child(2){animation-delay:.2s}
+.typing-indicator span:nth-child(3){animation-delay:.4s}
+@keyframes typeBounce{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-5px)}}
+
+/* SCROLL REVEAL */
+.reveal{opacity:0;transform:translateY(30px);transition:opacity 0.7s ease,transform 0.7s ease}
+.reveal.visible{opacity:1;transform:translateY(0)}
+
+/* RESPONSIVE */
+@media(max-width:900px){
+  nav{padding:1rem 1.5rem}
+  .nav-links{display:none}
+  .problem-grid{grid-template-columns:1fr}
+  .demo-layout{grid-template-columns:1fr}
+  .steps-grid{grid-template-columns:repeat(2,1fr)}
+  .steps-grid::before{display:none}
+  .impact-grid{grid-template-columns:1fr}
+  .hero-metrics{gap:1.5rem}
+  .section{padding:4rem 1.5rem}
+}
+</style>
+</head>
+<body>
+
+<!-- CURSOR -->
+<div class="cursor" id="cursor"></div>
+<div class="cursor-trail" id="cursorTrail"></div>
+
+<!-- NAV -->
+<nav id="navbar">
+  <div class="nav-logo">Clear<span>Mind</span></div>
+  <ul class="nav-links">
+    <li><a href="#problem">Problem</a></li>
+    <li><a href="#demo">Demo</a></li>
+    <li><a href="#how">How it works</a></li>
+    <li><a href="#impact">Impact</a></li>
+    <li><a href="#team">Team</a></li>
+  </ul>
+  <a href="#demo" class="nav-cta">Try Demo →</a>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-bg">
+    <div class="orb orb1"></div>
+    <div class="orb orb2"></div>
+    <div class="orb orb3"></div>
+    <div class="hero-grid"></div>
+  </div>
+  <div class="hero-inner">
+    <div class="hero-badge">🧠 AI for Good · Hackathon 2025</div>
+    <h1>
+      <span>Your mind,</span>
+      <span class="line2">clearer every day</span>
+      <span class="line3">Powered by Generative AI</span>
+    </h1>
+    <p class="hero-sub">ClearMind is an AI-powered wellness and productivity assistant that understands how you feel — and helps you feel better, focus deeper, and live intentionally.</p>
+    <div class="hero-btns">
+      <button class="btn-primary" onclick="document.getElementById('demo').scrollIntoView({behavior:'smooth'})">Try the Demo</button>
+      <button class="btn-outline" onclick="document.getElementById('how').scrollIntoView({behavior:'smooth'})">See How It Works</button>
+    </div>
+    <div class="hero-metrics">
+      <div class="metric"><div class="metric-num">72<span>%</span></div><div class="metric-label">Report burnout weekly</div></div>
+      <div class="metric"><div class="metric-num">3<span>B+</span></div><div class="metric-label">People lack wellness tools</div></div>
+      <div class="metric"><div class="metric-num">0<span>$</span></div><div class="metric-label">Cost to access ClearMind</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- PROBLEM -->
+<section id="problem">
+  <div class="section reveal">
+    <div class="section-label">The Problem</div>
+    <h2>Modern life is <em>overwhelming</em><br>and underserved</h2>
+    <p style="color:var(--muted);max-width:560px;line-height:1.7;font-size:0.95rem">Millions of people struggle daily with stress, burnout, lack of focus, and poor habits — yet access to mental wellness support remains expensive, stigmatized, or simply unavailable.</p>
+    <div class="problem-grid">
+      <div class="problem-card">
+        <span class="problem-icon">😔</span>
+        <h4>Mental Overload</h4>
+        <p>People juggle work, health, relationships, and goals simultaneously with no intelligent system to help them prioritize or decompress.</p>
+        <div class="problem-stat">1 in 5<span>adults experience mental health challenges yearly</span></div>
+      </div>
+      <div class="problem-card">
+        <span class="problem-icon">⏱️</span>
+        <h4>Productivity Paralysis</h4>
+        <p>Without personalized guidance, most people lose 2+ hours per day to decision fatigue, poor planning, and unclear priorities.</p>
+        <div class="problem-stat">2.5 hrs<span>lost to poor planning per person per day</span></div>
+      </div>
+      <div class="problem-card">
+        <span class="problem-icon">💸</span>
+        <h4>Access Gap</h4>
+        <p>Therapy costs $100–$300/session. Wellness apps are generic. Most people have no personalized, affordable mental health support.</p>
+        <div class="problem-stat">$280<span>average cost of a single therapy session</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- DEMO -->
+<section id="demo" class="demo-section">
+  <div class="demo-inner">
+    <div class="section-label reveal">Live Demo</div>
+    <h2 class="reveal" style="font-family:'Syne',sans-serif;font-size:clamp(2rem,4vw,3rem);font-weight:800;letter-spacing:-0.03em;margin-bottom:0.5rem">Talk to <em style="font-family:'Instrument Serif',serif;font-style:italic;color:var(--accent)">ClearMind</em></h2>
+    <p class="reveal" style="color:var(--muted);font-size:0.95rem;margin-bottom:0">Try the AI assistant — ask it anything about your day, stress, habits, or goals.</p>
+    <div class="demo-layout reveal">
+      <!-- CHAT -->
+      <div class="chat-window">
+        <div class="chat-titlebar">
+          <div class="dots"><div class="dot r"></div><div class="dot y"></div><div class="dot g"></div></div>
+          <span class="chat-title">ClearMind Assistant</span>
+          <div class="ai-status">AI Online</div>
+        </div>
+        <div class="quick-chips">
+          <button class="chip" onclick="quickSend(this)">I'm feeling stressed 😰</button>
+          <button class="chip" onclick="quickSend(this)">Help me plan my day</button>
+          <button class="chip" onclick="quickSend(this)">I can't focus 😕</button>
+          <button class="chip" onclick="quickSend(this)">Motivate me!</button>
+        </div>
+        <div class="chat-messages" id="chatMessages">
+          <div class="bubble ai">
+            <div class="sender">ClearMind AI</div>
+            Hi there 👋 I'm ClearMind — your personal AI wellness companion. How are you feeling today? Tell me what's on your mind and I'll help you feel better, focus deeper, or plan your day.
+          </div>
+        </div>
+        <div class="chat-inputbar">
+          <input type="text" id="chatInput" placeholder="Tell me how you're feeling..." onkeydown="if(event.key==='Enter')sendMessage()">
+          <button id="sendBtn" onclick="sendMessage()">Send →</button>
+        </div>
+      </div>
+      <!-- FEATURES -->
+      <div class="features-stack">
+        <div class="feat-card">
+          <div class="feat-icon purple">🧠</div>
+          <div class="feat-body">
+            <h4>Emotional Intelligence</h4>
+            <p>NLP-powered sentiment analysis understands your emotional state and tailors every response to how you're actually feeling.</p>
+          </div>
+        </div>
+        <div class="feat-card">
+          <div class="feat-icon orange">📋</div>
+          <div class="feat-body">
+            <h4>Smart Day Planning</h4>
+            <p>Tell ClearMind your tasks and energy level — it builds a prioritized, realistic daily plan around your mental capacity.</p>
+          </div>
+        </div>
+        <div class="feat-card">
+          <div class="feat-icon green">🌿</div>
+          <div class="feat-body">
+            <h4>Wellness Coaching</h4>
+            <p>From breathing exercises to journaling prompts, ClearMind offers evidence-based techniques personalized to your needs.</p>
+          </div>
+        </div>
+        <div class="feat-card">
+          <div class="feat-icon pink">📊</div>
+          <div class="feat-body">
+            <h4>Habit & Mood Tracking</h4>
+            <p>Log your moods and habits over time. ClearMind identifies patterns and suggests improvements backed by your own data.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section id="how">
+  <div class="steps-section reveal">
+    <div class="section-label">How It Works</div>
+    <h2>Four steps to a <em>clearer mind</em></h2>
+    <div class="steps-grid">
+      <div class="step">
+        <div class="step-num">01</div>
+        <h4>Check In</h4>
+        <p>Start your day by telling ClearMind how you feel. Takes 10 seconds — no forms, just conversation.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">02</div>
+        <h4>AI Analysis</h4>
+        <p>Our NLP engine reads your emotional state, energy level, and context to understand what you actually need.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">03</div>
+        <h4>Get Your Plan</h4>
+        <p>Receive a personalized action plan — tasks, breaks, exercises, and affirmations tailored to your day.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">04</div>
+        <h4>Track & Improve</h4>
+        <p>Over time, ClearMind learns your patterns and gets smarter — your wellness coach that grows with you.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TECH STACK -->
+<div class="tech-section">
+  <div class="tech-inner reveal">
+    <div class="section-label">Tech Stack</div>
+    <h2 style="font-family:'Syne',sans-serif;font-size:1.8rem;font-weight:800;letter-spacing:-0.02em">Built with cutting-edge AI tools</h2>
+    <div class="tech-grid">
+      <div class="tech-badge"><div class="tech-dot td-ai"></div>Claude API (Generative AI)</div>
+      <div class="tech-badge"><div class="tech-dot td-nlp"></div>NLP / Sentiment Analysis</div>
+      <div class="tech-badge"><div class="tech-dot td-fe"></div>React + Tailwind CSS</div>
+      <div class="tech-badge"><div class="tech-dot td-data"></div>Python / FastAPI</div>
+      <div class="tech-badge"><div class="tech-dot td-cloud"></div>Firebase / Supabase</div>
+      <div class="tech-badge"><div class="tech-dot td-ai"></div>LangChain</div>
+      <div class="tech-badge"><div class="tech-dot td-nlp"></div>HuggingFace Models</div>
+      <div class="tech-badge"><div class="tech-dot td-fe"></div>Vercel Deployment</div>
+    </div>
+  </div>
+</div>
+
+<!-- IMPACT -->
+<section id="impact">
+  <div class="impact-section reveal">
+    <div class="section-label">Real-World Impact</div>
+    <h2>Why ClearMind <em>matters</em></h2>
+    <p style="color:var(--muted);max-width:500px;margin-bottom:0;font-size:0.95rem;line-height:1.7">ClearMind doesn't just solve a tech problem — it addresses a human one. Here's the impact we're targeting:</p>
+    <div class="impact-grid">
+      <div class="impact-card">
+        <div class="impact-num">500M+</div>
+        <h4>Potential Users</h4>
+        <p>Over 500 million people globally experience anxiety, burnout, or stress without access to proper wellness support. ClearMind is free and accessible to all.</p>
+      </div>
+      <div class="impact-card">
+        <div class="impact-num">40%</div>
+        <h4>Productivity Boost</h4>
+        <p>Studies show AI-assisted planning and mood awareness can improve daily productivity by up to 40% — ClearMind puts that insight in everyone's pocket.</p>
+      </div>
+      <div class="impact-card">
+        <div class="impact-num">$0</div>
+        <h4>Barrier to Entry</h4>
+        <p>Unlike therapy or premium wellness apps, ClearMind's core features are entirely free — democratizing mental wellness support globally.</p>
+      </div>
+      <div class="impact-card">
+        <div class="impact-num">24/7</div>
+        <h4>Always Available</h4>
+        <p>Mental health doesn't follow a 9-to-5 schedule. ClearMind is available any time, any day — a compassionate AI that never closes.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TEAM -->
+<section id="team" class="team-section">
+  <div class="team-inner reveal">
+    <div class="section-label" style="justify-content:center">The Team</div>
+    <h2 style="font-family:'Syne',sans-serif;font-size:clamp(2rem,4vw,2.8rem);font-weight:800;letter-spacing:-0.03em">Built by humans,<br><em style="font-family:'Instrument Serif',serif;font-style:italic;color:var(--accent)">for humans</em></h2>
+    <div class="team-grid">
+      <div class="team-card">
+        <div class="team-avatar" style="background:rgba(124,110,245,0.15)">🧑‍💻</div>
+        <h4>Team Lead</h4>
+        <p>AI & Full-Stack Dev</p>
+      </div>
+      <div class="team-card">
+        <div class="team-avatar" style="background:rgba(232,124,90,0.15)">👩‍🎨</div>
+        <h4>UI/UX Designer</h4>
+        <p>Product Design</p>
+      </div>
+      <div class="team-card">
+        <div class="team-avatar" style="background:rgba(90,232,180,0.15)">🧑‍🔬</div>
+        <h4>ML Engineer</h4>
+        <p>NLP & Models</p>
+      </div>
+      <div class="team-card">
+        <div class="team-avatar" style="background:rgba(232,90,180,0.15)">👩‍⚕️</div>
+        <h4>Wellness Advisor</h4>
+        <p>Psychology & UX</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section reveal">
+  <h2>Ready to build<br>something <em>impactful?</em></h2>
+  <p>Explore our code, watch the demo, or reach out to the team.</p>
+  <div class="cta-links">
+    <a href="#" class="link-btn">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+      GitHub Repo
+    </a>
+    <a href="#demo" class="link-btn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+      Watch Demo
+    </a>
+    <a href="#problem" class="link-btn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      View Slides
+    </a>
+  </div>
+</section>
+
+<footer>
+  <strong>ClearMind</strong> — AI for Good Hackathon 2025 · Built with ❤️ and Claude AI
+</footer>
+
+<script>
+// Cursor
+const cursor = document.getElementById('cursor');
+const trail = document.getElementById('cursorTrail');
+document.addEventListener('mousemove', e => {
+  cursor.style.left = e.clientX - 6 + 'px';
+  cursor.style.top = e.clientY - 6 + 'px';
+  trail.style.left = e.clientX + 'px';
+  trail.style.top = e.clientY + 'px';
+});
+document.querySelectorAll('a,button,.chip,.feat-card,.step,.problem-card').forEach(el => {
+  el.addEventListener('mouseenter', () => cursor.style.transform = 'scale(2)');
+  el.addEventListener('mouseleave', () => cursor.style.transform = 'scale(1)');
+});
+
+// Navbar scroll
+window.addEventListener('scroll', () => {
+  document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 50);
+});
+
+// Scroll reveal
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('visible'); });
+}, { threshold: 0.12 });
+document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+// AI RESPONSES
+const responses = {
+  stress: [
+    "I can hear that you're feeling stressed 💙 That's completely valid. Let's take this one breath at a time.\n\nTry this: Breathe in for 4 counts, hold for 4, out for 6. Do it 3 times right now.\n\nAfter that, tell me — what's the *one* thing weighing on you most? We'll tackle just that.",
+    "Stress is your nervous system asking for attention 🌿 You're not broken — you just need a moment.\n\nHere's a quick reset: Step away from your screen for 2 minutes. Shake your hands, roll your shoulders. Come back and tell me what's on your list — I'll help you sort what matters from what can wait.",
+  ],
+  plan: [
+    "Let's build your day together! 📋 To create the best plan for you, tell me:\n\n1. What are your top 3 tasks today?\n2. How's your energy right now — low, medium, or high?\n3. How many hours do you have to work?\n\nWith that, I'll build you a schedule that fits your mental state, not just your to-do list.",
+    "Great — let's plan smart, not just hard 🎯\n\nI recommend starting with your most important task while your focus is fresh (first 90 minutes). Then schedule a short break, and tackle communication tasks (email, messages) in the afternoon when energy dips.\n\nWhat tasks do you have today? I'll map it out for you!",
+  ],
+  focus: [
+    "Trouble focusing is incredibly common — your brain isn't broken, it might just be overstimulated 🧠\n\nTry this: Close all tabs except what you need. Set a 25-minute timer (Pomodoro style). Put your phone face-down. Work on ONE thing only.\n\nWant me to help you pick that one thing right now? Sometimes just deciding is the hardest part.",
+    "When focus slips, it's usually one of three things: mental fatigue, lack of clarity on *what* to do, or emotional distraction.\n\nWhich feels most true for you right now? I can give you targeted strategies based on your specific block 🎯",
+  ],
+  motivate: [
+    "You showed up today. That already counts for something 🌟\n\nHere's the truth: motivation follows action, not the other way around. You don't wait to feel ready — you start tiny and let the momentum build.\n\nPick the smallest possible version of what you need to do. Literally the tiniest step. Do just that. Then tell me what happened.",
+    "Motivation is fuel, but systems are the engine 🔥\n\nInstead of waiting to feel motivated, let's build a tiny ritual: same time, same place, same first action. Your brain will start to crave it.\n\nWhat's the thing you're trying to get motivated for? Let's design a system around it together.",
+  ],
+  default: [
+    "Thank you for sharing that with me 💙 I'm here to help you think through it.\n\nClearMind is designed to support your mental wellness and daily productivity. I can help you manage stress, plan your day, build better habits, or just be a space to think out loud.\n\nWhat would be most helpful for you right now?",
+    "I hear you 🌿 It sounds like you have a lot on your mind. Let's slow down for a second.\n\nTell me more — what's the most pressing thing you're dealing with today? We can take it one step at a time together.",
+    "That's a great thing to explore 💡 ClearMind uses AI to give you personalized, evidence-based guidance.\n\nWhether it's stress management, focus techniques, habit building, or just having someone to think with — I'm here.\n\nWhat area would you like to focus on today?",
+  ]
+};
+
+function getResponse(msg) {
+  const m = msg.toLowerCase();
+  if (m.includes('stress') || m.includes('anxious') || m.includes('overwhelm') || m.includes('anxiety') || m.includes('worried')) return responses.stress[Math.floor(Math.random()*responses.stress.length)];
+  if (m.includes('plan') || m.includes('day') || m.includes('schedule') || m.includes('organize') || m.includes('task')) return responses.plan[Math.floor(Math.random()*responses.plan.length)];
+  if (m.includes('focus') || m.includes('distract') || m.includes('concentrate') || m.includes("can't")) return responses.focus[Math.floor(Math.random()*responses.focus.length)];
+  if (m.includes('motivat') || m.includes('lazy') || m.includes('tired') || m.includes('inspire')) return responses.motivate[Math.floor(Math.random()*responses.motivate.length)];
+  return responses.default[Math.floor(Math.random()*responses.default.length)];
+}
+
+function addMessage(text, sender) {
+  const box = document.getElementById('chatMessages');
+  const div = document.createElement('div');
+  div.className = 'bubble ' + sender;
+  div.innerHTML = `<div class="sender">${sender === 'ai' ? 'ClearMind AI' : 'You'}</div>${text.replace(/\n/g,'<br>')}`;
+  box.appendChild(div);
+  box.scrollTop = box.scrollHeight;
+}
+
+function showTyping() {
+  const box = document.getElementById('chatMessages');
+  const div = document.createElement('div');
+  div.className = 'bubble ai'; div.id = 'typing';
+  div.innerHTML = '<div class="sender">ClearMind AI</div><div class="typing-indicator"><span></span><span></span><span></span></div>';
+  box.appendChild(div); box.scrollTop = box.scrollHeight;
+}
+
+function removeTyping() {
+  const t = document.getElementById('typing');
+  if (t) t.remove();
+}
+
+function sendMessage() {
+  const input = document.getElementById('chatInput');
+  const btn = document.getElementById('sendBtn');
+  const msg = input.value.trim();
+  if (!msg) return;
+  addMessage(msg, 'user');
+  input.value = '';
+  btn.disabled = true;
+  showTyping();
+  const delay = 1200 + Math.random() * 800;
+  setTimeout(() => {
+    removeTyping();
+    addMessage(getResponse(msg), 'ai');
+    btn.disabled = false;
+    input.focus();
+  }, delay);
+}
+
+function quickSend(btn) {
+  document.getElementById('chatInput').value = btn.textContent;
+  sendMessage();
+}
+</script>
+</body>
+</html>
